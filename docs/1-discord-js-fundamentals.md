@@ -153,12 +153,38 @@ await interaction.reply({ embeds: [embed] });
 
 ---
 
+## What are Intents? (Simple Explanation)
+
+**Think of intents like a mailbox filter:**
+
+Imagine getting tons of mail every day. You say: **"Only put certain things in my mailbox"**
+
+```
+Your preferences:
+✅ Birthday cards
+✅ Package deliveries
+❌ Junk mail
+❌ Bills
+```
+
+Your bot works the same way. Discord sends THOUSANDS of events every second:
+- "Someone sent a message"
+- "Someone joined the server"
+- "Someone reacted to a message"
+- ... and many more
+
+**Intents tell Discord**: *"I only care about THESE events. Don't waste data sending me the rest."*
+
+**Why?** More intents = More data = More bandwidth used. So only ask for what you need!
+
+---
+
 ## Important Intents to Know
 
 | Intent | What It Offers | Use When |
 |--------|-------|---------|
-| `Guilds` | Server create/update/delete, channel info | Always needed for slash commands |
-| `GuildMembers` | Member join/leave events | Tracking users |
+| `Guilds` | Server create/update/delete, channel info | **Always needed** for slash commands |
+| `GuildMembers` | Member join/leave events | Tracking user joins/leaves |
 | `MessageContent` | Read message text content | Prefix commands, message analysis |
 | `DirectMessages` | DM received events | Handle private messages |
 
@@ -166,7 +192,13 @@ await interaction.reply({ embeds: [embed] });
 ```javascript
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 ```
-- Only has `Guilds` intent since we only need slash commands, not messages
+
+**What this means**:
+- ✅ Bot gets guild (server) events → Slash commands work
+- ❌ Bot doesn't get message events → Saves bandwidth
+- ❌ Bot doesn't track member joins → Not needed
+
+**Real-world analogy**: Mammon only subscribed to "server stuff" because it only uses slash commands. It doesn't need to know about messages or members, so we don't ask Discord to send that data.
 
 ---
 
