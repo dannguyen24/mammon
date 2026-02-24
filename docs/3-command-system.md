@@ -382,14 +382,17 @@ export default {
 ```
 commands/
 ├── leetcode/          # All LeetCode commands
-│   ├── link.js
-│   ├── stats.js
-│   └── unlink.js
+│   ├── link.js         # /link <username>
+│   ├── stats.js        # /stats [@user]
+│   ├── leaderboard.js  # /leaderboard
+│   ├── daily.js        # /daily
+│   └── untrack.js      # /untrack
 │
 └── utility/           # General bot commands
-    ├── ping.js
-    ├── help.js
-    └── user.js
+    ├── ping.js         # /ping
+    ├── user.js         # /user
+    ├── mammon-help.js  # /mammon-help
+    └── setchannel.js   # /setchannel
 ```
 
 ### Import Shared Functions
@@ -498,3 +501,4 @@ const role = interaction.options.getRole('name');
 - **Ready to register commands?** → [Command Registration](./4-command-registration.md)
 - **Want to call APIs?** → [GraphQL Integration](./6-graphql-integration.md)
 - **Need database access?** → [Database System](./7-database-system.md)
+- **Understand the automation?** → [Polling & Scheduling System](./8-polling-system.md)

@@ -72,6 +72,7 @@ mammon/
 │                                      # - Creates Discord client
 │                                      # - Loads all commands
 │                                      # - Listens to InteractionCreate events
+│                                      # - Starts poller & scheduler on ready
 │                                      # - Handles errors
 │
 ├── deploy-commands.js                # DEPLOYMENT: Register commands with Discord
@@ -87,28 +88,45 @@ mammon/
 ├── commands/                         # ALL SLASH COMMAND DEFINITIONS
 │   ├── leetcode/                     # LeetCode-specific functionality
 │   │   ├── link.js                   # Link Discord → LeetCode account
-│   │   └── stats.js                  # Display LeetCode statistics
+│   │   ├── stats.js                  # Display LeetCode statistics
+│   │   ├── leaderboard.js            # Server rankings by problems solved
+│   │   ├── daily.js                  # Today's LeetCode Daily Challenge
+│   │   └── untrack.js                # Unlink account & stop tracking
 │   │
 │   └── utility/                      # General bot commands
 │       ├── ping.js                   # Health check (hello bot!)
-│       └── user.js                   # Get user info
+│       ├── user.js                   # Get user info
+│       ├── mammon-help.js            # Categorized command guide
+│       └── setchannel.js             # Set log channel for announcements
 │
-├── services/                         # EXTERNAL API INTEGRATION
-│   └── leetcode.js                   # LeetCode GraphQL queries & fetching
-│                                      # - Fetch user profiles
-│                                      # - Get recent submissions
-│                                      # - Handle API requests
+├── services/                         # EXTERNAL API & AUTOMATION
+│   ├── leetcode.js                   # LeetCode GraphQL queries & fetching
+│   │                                  # - Fetch user profiles
+│   │                                  # - Get recent submissions
+│   │                                  # - Get daily challenge
+│   │                                  # - Get problem difficulty
+│   │
+│   └── poller.js                     # Automated monitoring & scheduling
+│                                      # - Activity monitor (every 5 min)
+│                                      # - Victory announcements
+│                                      # - Daily recap (9 AM)
+│                                      # - Streak nudge (8 PM)
 │
 ├── database/                         # DATA PERSISTENCE (SQLite)
 │   ├── init.js                       # Create database tables on startup
+│   │                                  # - users table
+│   │                                  # - guild_settings table
+│   │                                  # - solved_problems table
 │   └── queries.js                    # SQL helper functions
-│                                      # - Create user links
-│                                      # - Get user mappings
-│                                      # - Update stats
+│                                      # - User CRUD operations
+│                                      # - Guild settings
+│                                      # - Polling & tracking queries
+│                                      # - Solved problems tracking
 │
 └── leetcode_tracker.db              # ACTUAL DATABASE FILE
                                       # - Stores Discord ↔ LeetCode mappings
-                                      # - Local SQLite database
+                                      # - Guild settings (log channels)
+                                      # - Individual solved problems
 ```
 
 ---
@@ -174,11 +192,16 @@ Each command is a module with:
 ```
 commands/
 ├── leetcode/
-│   ├── link.js      → /link <username>
-│   └── stats.js     → /stats [username]
+│   ├── link.js          → /link <username>
+│   ├── stats.js         → /stats [@user]
+│   ├── leaderboard.js   → /leaderboard
+│   ├── daily.js         → /daily
+│   └── untrack.js       → /untrack
 └── utility/
-    ├── ping.js      → /ping
-    └── user.js      → /user
+    ├── ping.js          → /ping
+    ├── user.js          → /user
+    ├── mammon-help.js   → /mammon-help
+    └── setchannel.js    → /setchannel
 ```
 
 #### Example Command Template:
@@ -207,36 +230,69 @@ export default {
 1. Defines GraphQL queries for LeetCode
 2. Fetches user profile data
 3. Gets recent submissions
-4. Handles API errors gracefully
+4. Gets today's daily challenge problem
+5. Gets problem difficulty by slug
+6. Handles API errors gracefully
 
 **How it's used**:
 ```javascript
-// In link.js command
-import { getUserProfile } from '../../services/leetcode.js';
+import { getUserProfile, getDailyProblem } from '../../services/leetcode.js';
 
 const profile = await getUserProfile('john_doe');
-// Returns: { username, realName, ranking, avatar, stats, ... }
+// Returns: { username, realName, ranking, avatar, stats, currentStreak }
+
+const daily = await getDailyProblem();
+// Returns: { title, link, difficulty, tags, acceptanceRate }
+```
+
+---
+
+### 4b. **services/poller.js** - Automated Monitoring
+
+**Purpose**: Background systems that run on timers (no user interaction needed)
+
+**Three automated systems**:
+1. **Activity Monitor** (every 5 min) — Checks each tracked user's recent LeetCode submissions and posts victory announcements in the guild's log channel
+2. **Daily Recap** (9 AM) — Posts "🏆 Top Grinders of Yesterday" showing who solved the most problems
+3. **Streak Nudge** (8 PM) — Warns users whose active streaks are at risk if they haven't solved anything today
+
+**Started from index.js**:
+```javascript
+import { startPoller, startScheduler } from './services/poller.js';
+
+client.once(Events.ClientReady, (readyClient) => {
+    startPoller(readyClient);
+    startScheduler(readyClient);
+});
 ```
 
 ---
 
 ### 5. **database/** - Local Data Storage
 
-**Purpose**: Map Discord users to their LeetCode accounts
+**Purpose**: Store user mappings, guild settings, and solved problem history
 
 **Files**:
-- **init.js**: Creates the database schema on first run
+- **init.js**: Creates the database schema on first run (3 tables + migrations)
 - **queries.js**: Helper functions to query the database
 
-**What it stores**:
+**Tables**:
 ```
-users_table:
-┌────────────┬────────────┬────────────┬───────────────┐
-│ discordId  │ guildId    │ username   │ linkedAt      │
-├────────────┼────────────┼────────────┼───────────────┤
-│ 123456789  │ 987654321  │ john_doe   │ 2024-02-23    │
-│ 111111111  │ 987654321  │ jane_smith │ 2024-02-22    │
-└────────────┴────────────┴────────────┴───────────────┘
+users table:                                    guild_settings table:
+┌────────────┬────────────┬────────────┐   ┌───────────┬───────────────┐
+│ discordId  │ guildId    │ username   │   │ guild_id  │ log_channel_id│
+├────────────┼────────────┼────────────┤   ├───────────┼───────────────┤
+│ 123456789  │ 987654321  │ john_doe   │   │ 987654321 │ 111222333     │
+│ 111111111  │ 987654321  │ jane_smith │   └───────────┴───────────────┘
+└────────────┴────────────┴────────────┘
+
+solved_problems table:
+┌────────────┬────────────┬────────────┬────────────┐
+│ discord_id │ guild_id   │ problem    │ difficulty │
+├────────────┼────────────┼────────────┼────────────┤
+│ 123456789  │ 987654321  │ Two Sum    │ Easy       │
+│ 123456789  │ 987654321  │ Add Two #s │ Medium     │
+└────────────┴────────────┴────────────┴────────────┘
 ```
 
 **How it's used**:
@@ -246,7 +302,12 @@ linkUser(discordId, guildId, leetcodeUsername);
 
 // Retrieve: When user runs /stats
 const user = getUser(discordId, guildId);
-// Returns: { username, linkedAt, ... }
+
+// Guild settings: When admin runs /setchannel
+setLogChannel(guildId, channelId);
+
+// Tracking: When poller detects new solve
+saveSolvedProblem(discordId, guildId, title, slug, difficulty, timestamp);
 ```
 
 ---
@@ -345,7 +406,7 @@ When the bot starts (`node index.js`):
 
 ```
 1. import modules
-   └→ discord.js, config, fs, path, etc.
+   └→ discord.js, config, fs, path, poller, etc.
 
 2. Create Discord Client
    └→ new Client({ intents: [GatewayIntentBits.Guilds] })
@@ -370,6 +431,7 @@ When the bot starts (`node index.js`):
 7. Initialize database
    └→ database/init.js runs
       Creates tables if they don't exist
+      Runs migrations (new columns)
 
 8. Login to Discord
    └→ client.login(token)
@@ -378,6 +440,8 @@ When the bot starts (`node index.js`):
 
 9. Ready!
    └→ Logs: "Ready! Logged in as BotName#0000"
+      Starts Activity Monitor (every 5 min)
+      Starts Scheduler (daily recap & streak nudge)
       Now listening for interactions
 ```
 
@@ -405,11 +469,12 @@ When the bot starts (`node index.js`):
 
 | File | Purpose | Usage |
 |------|---------|-------|
-| index.js | Main bot logic & event handling | Run: `node index.js` |
+| index.js | Main bot logic, event handling, starts poller | Run: `node index.js` |
 | deploy-commands.js | Register commands with Discord | Run after changes: `node deploy-commands.js` |
-| commands/ | Slash command definitions | User interaction happens here |
-| services/leetcode.js | LeetCode GraphQL queries | Called by commands |
-| database/ | Store user mappings locally | Called by commands |
+| commands/ | Slash command definitions (9 commands) | User interaction happens here |
+| services/leetcode.js | LeetCode GraphQL queries | Called by commands & poller |
+| services/poller.js | Activity monitor, daily recap, streak nudge | Auto-runs on timers |
+| database/ | Store users, guild settings, solved problems | Called by commands & poller |
 | config.json | Bot credentials | Read by index.js |
 
 ---
@@ -419,3 +484,4 @@ When the bot starts (`node index.js`):
 - **Want to create a command?** → Read [Command System](./3-command-system.md)
 - **Need to understand command registration?** → Read [Command Registration](./4-command-registration.md)
 - **Curious about GraphQL?** → Read [GraphQL Integration](./6-graphql-integration.md)
+- **How does the automation work?** → Read [Polling & Scheduling System](./8-polling-system.md)

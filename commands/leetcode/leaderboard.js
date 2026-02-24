@@ -13,7 +13,7 @@ function getMedal(index) {
 export default {
 	data: new SlashCommandBuilder()
 		.setName('leaderboard')
-		.setDescription('Show the top LeetCode grinders in this server'),
+		.setDescription('Show the top grinders in this server'),
 
 	async execute(interaction) {
 		const guildId = interaction.guild.id;

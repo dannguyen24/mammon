@@ -17,6 +17,9 @@ This documentation is organized into the following sections:
 6. **[GraphQL Integration](./docs/6-graphql-integration.md)** - How the bot fetches LeetCode data using GraphQL
 7. **[Database System](./docs/7-database-system.md)** - How user data is stored and managed locally
 
+### Automation
+8. **[Polling & Scheduling System](./docs/8-polling-system.md)** - Automated activity monitoring, victory announcements, daily recaps, and streak alerts
+
 ---
 
 ## 🚀 Quick Start
@@ -36,20 +39,26 @@ node index.js
 ### File Structure
 ```
 mammon/
-├── index.js                 # Main bot entry point
+├── index.js                 # Main bot entry point (starts poller & scheduler)
 ├── deploy-commands.js       # Command registration script
 ├── config.json              # Bot credentials
 ├── commands/                # All slash commands
 │   ├── leetcode/           # LeetCode-specific commands
 │   │   ├── link.js         # Link Discord to LeetCode account
-│   │   └── stats.js        # View LeetCode stats
+│   │   ├── stats.js        # View LeetCode stats
+│   │   ├── leaderboard.js  # Server rankings by problems solved
+│   │   ├── daily.js        # Today's LeetCode Daily Challenge
+│   │   └── untrack.js      # Unlink account & stop tracking
 │   └── utility/            # General utility commands
 │       ├── ping.js         # Health check
-│       └── user.js         # User info
+│       ├── user.js         # User info
+│       ├── mammon-help.js  # Categorized command guide
+│       └── setchannel.js   # Set log channel for announcements
 ├── services/
-│   └── leetcode.js         # GraphQL API calls to LeetCode
+│   ├── leetcode.js         # GraphQL API calls to LeetCode
+│   └── poller.js           # Activity monitor, daily recap & streak alerts
 ├── database/
-│   ├── init.js             # Database schema setup
+│   ├── init.js             # Database schema setup (3 tables)
 │   └── queries.js          # Database query functions
 └── node_modules/           # Dependencies
 ```
@@ -58,11 +67,27 @@ mammon/
 
 ## 🔑 Key Features
 
+### Milestone 1 — Profile Linking & Basic Commands
 - **Slash Commands**: Modern Discord command system with slash (`/`) interface
 - **LeetCode Integration**: Fetch real-time LeetCode profile data via GraphQL API
 - **User Linking**: Map Discord users to their LeetCode accounts
 - **Statistics Tracking**: Display solving stats, streaks, and rankings
-- **Local Database**: SQLite database for persistent user data
+
+### Milestone 2 — The "Hustle" Feed (Automated Updates)
+- **Activity Monitor**: Polls LeetCode every 5 minutes for new submissions
+- **Victory Announcements**: Auto-posts when a user solves a new problem (with difficulty, link, and total count)
+- **Daily Recap (9 AM)**: Posts yesterday's "Top Grinders" with medal rankings
+- **Streak Alerts (8 PM)**: Warns users whose streaks are at risk
+
+### Milestone 3 — Social & Competitive Dynamics
+- **Leaderboard**: `/leaderboard` ranks all server members by problems solved with live data
+- **Daily Challenge**: `/daily` shows today's LeetCode problem with difficulty, tags, and acceptance rate
+
+### Extra
+- **Help Command**: `/mammon-help` lists all commands in categorized groups
+- **Untrack Command**: `/untrack` lets users unlink and stop monitoring
+- **Log Channel**: `/setchannel` designates where automated posts go
+- **Local Database**: SQLite with 3 tables for users, guild settings, and solved problems
 
 ---
 
@@ -78,6 +103,9 @@ mammon/
 
 **Working with LeetCode data?** See:
 1. [GraphQL Integration](./docs/6-graphql-integration.md) for API details
+
+**Want to understand the automated systems?** See:
+1. [Polling & Scheduling System](./docs/8-polling-system.md) for the activity monitor, recaps, and streak alerts
 2. [Database System](./docs/7-database-system.md) to store user data
 
 ---

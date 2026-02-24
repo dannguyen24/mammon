@@ -469,6 +469,15 @@ async function graphqlRequest(query, variables) {
 
 **File**: `services/leetcode.js`
 
+Mammon uses **four** GraphQL queries:
+
+| Query | Purpose |
+|-------|---------|
+| `USER_PROFILE_QUERY` | Get user stats (ranking, solved count, streak) |
+| `RECENT_SUBMISSIONS_QUERY` | Get recent problem submissions |
+| `DAILY_PROBLEM_QUERY` | Get today's Daily Challenge |
+| `PROBLEM_DETAIL_QUERY` | Get a problem's difficulty by slug |
+
 ```javascript
 const LEETCODE_GRAPHQL_URL = 'https://leetcode.com/graphql';
 
@@ -616,6 +625,8 @@ async function getCachedProfile(username) {
 | **`graphqlRequest()`** | Helper function to make requests |
 | **`getUserProfile()`** | Get LeetCode user stats |
 | **`getRecentSubmissions()`** | Get recent solved problems |
+| **`getDailyProblem()`** | Get today's Daily Challenge |
+| **`getProblemDifficulty()`** | Get a problem's difficulty by slug |
 
 ---
 
@@ -624,3 +635,4 @@ async function getCachedProfile(username) {
 - **Want to store this data?** → [Database System](./7-database-system.md)
 - **Need to use profile in commands?** → [Command System](./3-command-system.md)
 - **Curious how it all connects?** → [Project Architecture](./2-project-architecture.md)
+- **How does the poller use these queries?** → [Polling & Scheduling System](./8-polling-system.md)

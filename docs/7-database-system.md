@@ -2,15 +2,13 @@
 
 ## What is the Database?
 
-The **database** is a local SQLite file that stores mappings between Discord users and their LeetCode accounts.
+The **database** is a local SQLite file that stores mappings between Discord users and their LeetCode accounts, guild-specific settings, and a history of solved problems for tracking and deduplication.
 
 ```
 ┌─────────────────────────────────────────┐
-│ Discord User      → LeetCode Username    │
-├─────────────────────────────────────────┤
-│ user123456        → john_doe             │
-│ user789012        → jane_smith           │
-│ user345678        → algo_master          │
+│ users: Discord → LeetCode mapping        │
+│ guild_settings: Log channel per guild    │
+│ solved_problems: Problem solve history   │
 └─────────────────────────────────────────┘
 ```
 
@@ -27,37 +25,94 @@ The **database** is a local SQLite file that stores mappings between Discord use
 
 ## Database Schema
 
-The database has one main table: `users`
+The database has three tables: `users`, `guild_settings`, and `solved_problems`
+
+### Table 1: `users`
 
 ```sql
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    discordId TEXT NOT NULL,
-    guildId TEXT NOT NULL,
-    username TEXT NOT NULL,
-    linkedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(discordId, guildId)
+    discord_id TEXT NOT NULL,
+    guild_id TEXT NOT NULL,
+    leetcode_username TEXT NOT NULL,
+    linked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    last_submission_timestamp INTEGER DEFAULT 0,
+    total_solved INTEGER DEFAULT 0,
+    current_streak INTEGER DEFAULT 0,
+    UNIQUE(discord_id, guild_id)
 );
 ```
-
-### What Each Field Means
 
 | Field | Type | Purpose |
 |-------|------|---------|
 | `id` | INTEGER | Unique row identifier |
-| `discordId` | TEXT | Discord user's ID |
-| `guildId` | TEXT | Server/guild ID |
-| `username` | TEXT | LeetCode username |
-| `linkedAt` | DATETIME | When account was linked |
+| `discord_id` | TEXT | Discord user's ID |
+| `guild_id` | TEXT | Server/guild ID |
+| `leetcode_username` | TEXT | LeetCode username |
+| `linked_at` | TEXT | When account was linked |
+| `last_submission_timestamp` | INTEGER | Unix timestamp of last checked submission (for polling) |
+| `total_solved` | INTEGER | Cached total problems solved |
+| `current_streak` | INTEGER | Cached current streak |
+
+### Table 2: `guild_settings`
+
+```sql
+CREATE TABLE guild_settings (
+    guild_id TEXT PRIMARY KEY,
+    log_channel_id TEXT,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `guild_id` | TEXT | Server/guild ID |
+| `log_channel_id` | TEXT | Channel where automated posts go |
+| `updated_at` | TEXT | When setting was last changed |
+
+### Table 3: `solved_problems`
+
+```sql
+CREATE TABLE solved_problems (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    discord_id TEXT NOT NULL,
+    guild_id TEXT NOT NULL,
+    problem_title TEXT NOT NULL,
+    problem_slug TEXT NOT NULL,
+    difficulty TEXT,
+    solved_at INTEGER NOT NULL,
+    UNIQUE(discord_id, guild_id, problem_slug)
+);
+```
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `discord_id` | TEXT | Discord user's ID |
+| `guild_id` | TEXT | Server/guild ID |
+| `problem_title` | TEXT | Problem name (e.g., "Two Sum") |
+| `problem_slug` | TEXT | URL-friendly name (e.g., "two-sum") |
+| `difficulty` | TEXT | Easy, Medium, or Hard |
+| `solved_at` | INTEGER | Unix timestamp when solved |
 
 ### Example Data
 
 ```
-id | discordId      | guildId        | username    | linkedAt
----|----------------|----------------|-------------|--------------------
-1  | 123456789      | 987654321      | john_doe    | 2024-02-23 12:00:00
-2  | 111111111      | 987654321      | jane_smith  | 2024-02-22 15:30:00
-3  | 222222222      | 654321098      | algo_master | 2024-02-21 08:45:00
+users:
+id | discord_id     | guild_id       | leetcode_username | last_submission_timestamp | total_solved
+---|----------------|----------------|-------------------|--------------------------|-------------
+1  | 123456789      | 987654321      | john_doe          | 1708598400                | 150
+2  | 111111111      | 987654321      | jane_smith        | 1708512000                | 85
+
+guild_settings:
+guild_id       | log_channel_id | updated_at
+---------------|----------------|--------------------
+987654321      | 111222333444   | 2026-02-23 12:00:00
+
+solved_problems:
+id | discord_id  | guild_id   | problem_title | problem_slug | difficulty | solved_at
+---|-------------|------------|---------------|--------------|------------|----------
+1  | 123456789   | 987654321  | Two Sum       | two-sum      | Easy       | 1708598400
+2  | 123456789   | 987654321  | Add Two Nums  | add-two-nums | Medium     | 1708512000
 ```
 
 ---
@@ -552,6 +607,13 @@ stmt.run(value1, value2);
 | **Get** | `getUser(discordId, guildId)` | Retrieve linked LeetCode username |
 | **Get All** | `getGuildUsers(guildId)` | Get all linked users in a server |
 | **Unlink** | `unlinkUser(discordId, guildId)` | Remove the link |
+| **Set Channel** | `setLogChannel(guildId, channelId)` | Set log channel for announcements |
+| **Get Channel** | `getLogChannel(guildId)` | Get the log channel ID |
+| **Get All Tracked** | `getAllTrackedUsers()` | Get all users across all guilds (poller) |
+| **Update Stats** | `updateUserStats(...)` | Cache total solved + streak |
+| **Save Solve** | `saveSolvedProblem(...)` | Record a solved problem |
+| **Yesterday** | `getYesterdaySolvers(guildId)` | Top solvers from yesterday (recap) |
+| **Today Count** | `getTodaySolveCount(...)` | How many solved today (streak nudge) |
 
 ---
 
@@ -560,3 +622,4 @@ stmt.run(value1, value2);
 - **Want to create a new command?** → [Command System](./3-command-system.md)
 - **Need to fetch data from APIs?** → [GraphQL Integration](./6-graphql-integration.md)
 - **Confused about how it all works?** → [Project Architecture](./2-project-architecture.md)
+- **How does the poller use the database?** → [Polling & Scheduling System](./8-polling-system.md)
