@@ -23,6 +23,34 @@ const USER_PROFILE_QUERY = `
 	}
 `;
 
+// GraphQL query to get today's daily challenge
+const DAILY_PROBLEM_QUERY = `
+	query questionOfToday {
+		activeDailyCodingChallengeQuestion {
+			date
+			link
+			question {
+				title
+				titleSlug
+				difficulty
+				topicTags {
+					name
+				}
+				acRate
+			}
+		}
+	}
+`;
+
+// GraphQL query to get a problem's difficulty by slug
+const PROBLEM_DETAIL_QUERY = `
+	query getQuestionDetail($titleSlug: String!) {
+		question(titleSlug: $titleSlug) {
+			difficulty
+		}
+	}
+`;
+
 // GraphQL query to get recent submissions
 const RECENT_SUBMISSIONS_QUERY = `
 	query getRecentSubmissions($username: String!, $limit: Int!) {
@@ -151,8 +179,49 @@ export async function validateUsername(username) {
 	}
 }
 
+/**
+ * Get today's LeetCode daily challenge
+ * @returns {object|null} Daily problem data or null
+ */
+export async function getDailyProblem() {
+	try {
+		const data = await graphqlRequest(DAILY_PROBLEM_QUERY, {});
+		const challenge = data.activeDailyCodingChallengeQuestion;
+		if (!challenge) return null;
+
+		return {
+			date: challenge.date,
+			link: `https://leetcode.com${challenge.link}`,
+			title: challenge.question.title,
+			titleSlug: challenge.question.titleSlug,
+			difficulty: challenge.question.difficulty,
+			tags: challenge.question.topicTags.map(t => t.name),
+			acceptanceRate: challenge.question.acRate,
+		};
+	} catch (error) {
+		console.error('[LeetCode] Error fetching daily problem:', error.message);
+		throw error;
+	}
+}
+
+/**
+ * Get the difficulty of a specific problem by its slug
+ * @param {string} titleSlug - The problem's URL slug
+ * @returns {string|null} 'Easy', 'Medium', 'Hard', or null
+ */
+export async function getProblemDifficulty(titleSlug) {
+	try {
+		const data = await graphqlRequest(PROBLEM_DETAIL_QUERY, { titleSlug });
+		return data.question?.difficulty || null;
+	} catch {
+		return null;
+	}
+}
+
 export default {
 	getUserProfile,
 	getRecentSubmissions,
 	validateUsername,
+	getDailyProblem,
+	getProblemDifficulty,
 };

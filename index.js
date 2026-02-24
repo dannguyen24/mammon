@@ -13,6 +13,7 @@ import config from './config.json' with { type: 'json' };
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { startPoller, startScheduler } from './services/poller.js';
 
 
 /**==========================SETUP DIRECTORY AND CLIENT==========================*/
@@ -28,6 +29,10 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // Event listener for when the bot is ready and connected to Discord.
 client.once(Events.ClientReady, (readyClient) => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+
+	// Start automated systems (Milestone 2)
+	startPoller(readyClient);    // Victory announcements every 5 min
+	startScheduler(readyClient); // Daily recap (9 AM) & streak nudge (8 PM)
 });
 
 /**==========================ADD COMMANDS TO CLIENT==========================*/

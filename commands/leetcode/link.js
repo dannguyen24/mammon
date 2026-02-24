@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import { linkUser, getUser } from '../../database/queries.js';
-import { getUserProfile } from '../../services/leetcode.js';
+import { linkUser, getUser, updateLastSubmissionTimestamp } from '../../database/queries.js';
+import { getUserProfile, getRecentSubmissions } from '../../services/leetcode.js';
 
 export default {
 	data: new SlashCommandBuilder()
@@ -56,6 +56,14 @@ export default {
 			if (existingUser) {
 				embed.setFooter({ text: `Updated from: ${existingUser.leetcode_username}` });
 			}
+
+			// Set the initial submission timestamp so the poller doesn't announce old problems
+			try {
+				const recent = await getRecentSubmissions(username, 1);
+				if (recent && recent.length > 0) {
+					updateLastSubmissionTimestamp(discordId, guildId, Number.parseInt(recent[0].timestamp));
+				}
+			} catch { /* non-critical */ }
 
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
