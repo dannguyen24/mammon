@@ -1,5 +1,5 @@
 import { REST, Routes } from 'discord.js';
-import { token, clientId, guildId } from './config-loader.js';
+import { token, clientId } from './config-loader.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -35,10 +35,10 @@ const rest = new REST().setToken(token);
 // and deploy your commands!
 await (async () => {
 	try {
-		console.log(`Started refreshing ${commands.length} application (/) commands.`);
+		console.log(`Started refreshing ${commands.length} application (/) commands globally.`);
 
-		// The put method is used to fully refresh all commands in the guild with the current set
-		const data = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
+		// Register commands globally (works in all servers)
+		const data = await rest.put(Routes.applicationCommands(clientId), { body: commands });
 
 		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {
