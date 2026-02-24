@@ -127,7 +127,7 @@ If you're concerned about data privacy, you can **self-host** this bot:
 - You acknowledge that solution submission data is cached and may persist in backups
 - You consent to your LeetCode username and solved problem metadata being stored locally
 - The bot owner is not liable for data loss or misuse
-- For questions about data retention, contact the bot owner
+- For questions about data retention, email dannguyen2412005@gmail.com
 
 ---
 
@@ -182,7 +182,7 @@ The bot is deployed to **Railway** with automatic redeployment on git push. See 
 ## Support & Contributing
 
 - **Found a bug?** Open an issue on GitHub
-- **Have a feature request?** Let us know!
+- **Have a feature request?** Let me know!
 - **Want to contribute?** Fork and submit a pull request
 
 ---
