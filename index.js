@@ -9,7 +9,7 @@
  * - MessageFlags: Control message visibility (e.g., ephemeral = only visible to user)
  */
 import { Client, Collection, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
-import config from './config.json' with { type: 'json' };
+import { token } from './config-loader.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +20,6 @@ import { startPoller, startScheduler } from './services/poller.js';
 
 const __filename = fileURLToPath(import.meta.url);//current file's filepath
 const __dirname = path.dirname(__filename); //directory of the current file
-const { token } = config;
 
 console.log('Bot is starting...');
 
