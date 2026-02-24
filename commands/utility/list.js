@@ -8,7 +8,7 @@ export default {
         const linkedAccounts = getGuildUsers(guildId);
         const fields = linkedAccounts.length > 0
             ? linkedAccounts.map(user => ({
-                name: `<@${user}>`,
+                name: `<@${user.discord_id}>`,
                 value: `LeetCode: **${user.leetcode_username}**`,
             }))
             : [{ name: 'No linked accounts', value: 'Use `/link <username>` to connect your LeetCode profile!' }];
