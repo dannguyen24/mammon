@@ -80,10 +80,14 @@ mammon/
 │                                      # - Sends them to Discord API
 │                                      # - Makes `/` commands appear in Discord
 │
-├── config.json                       # CREDENTIALS
+├── config-loader.js                 # CONFIG MANAGEMENT
+│                                      # - Loads config.json locally (dev)
+│                                      # - Falls back to env vars (Railway/prod)
+│                                      # - Exports: token, clientId
+│
+├── config.json                       # CREDENTIALS (local dev only, gitignored)
 │                                      # - Discord bot token
 │                                      # - Client ID
-│                                      # - Guild ID (server)
 │
 ├── commands/                         # ALL SLASH COMMAND DEFINITIONS
 │   ├── leetcode/                     # LeetCode-specific functionality

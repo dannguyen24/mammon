@@ -11,7 +11,7 @@
 | **Guild Registration** | ~15 seconds | Development (single server) |
 | **Global Registration** | ~1 hour | Production (all servers) |
 
-**Note**: Mammon uses **guild registration** (see `guildId` in config.json)
+**Note**: Mammon uses **global registration** (recommended for multi-server deployments)
 
 ---
 

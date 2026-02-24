@@ -1,8 +1,16 @@
 # Discord Bot Documentation - Mammon (LeetCode Tracker)
 
+## � For End Users
+
+**New to the bot?** Start with [README.md](./README.md) for:
+- Quick start guide
+- Command reference  
+- Data privacy & disclaimer
+- Invite link
+
 ## 📚 Documentation Structure
 
-This documentation is organized into the following sections:
+This technical documentation is organized into the following sections:
 
 ### Core Concepts
 1. **[Discord.js Fundamentals](./docs/1-discord-js-fundamentals.md)** - Learn what discord.js is and its core concepts
@@ -24,24 +32,39 @@ This documentation is organized into the following sections:
 
 ## 🚀 Quick Start
 
-### Running the Bot
+### Running Locally
 ```bash
 # Install dependencies
 npm install
 
-# Deploy slash commands to Discord
+# Deploy slash commands to Discord (globally)
 node deploy-commands.js
 
 # Start the bot
 node index.js
 ```
 
+### Deploying to Production (Railway)
+The bot is configured for easy deployment to Railway:
+
+1. Push code to GitHub
+2. Connect GitHub repo to Railway project
+3. Set environment variables in Railway dashboard:
+   ```
+   TOKEN=your_bot_token
+   CLIENT_ID=your_client_id
+   ```
+4. Railway auto-deploys on push to main
+
+See [README.md](./README.md) for user-facing documentation and quick start guide.
+
 ### File Structure
 ```
 mammon/
 ├── index.js                 # Main bot entry point (starts poller & scheduler)
-├── deploy-commands.js       # Command registration script
-├── config.json              # Bot credentials
+├── deploy-commands.js       # Global command registration script
+├── config-loader.js         # Config management (JSON locally + env vars in prod)
+├── config.json              # Bot credentials (local dev, in .gitignore)
 ├── commands/                # All slash commands
 │   ├── leetcode/           # LeetCode-specific commands
 │   │   ├── link.js         # Link Discord to LeetCode account
