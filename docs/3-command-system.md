@@ -244,14 +244,16 @@ async execute(interaction) {
 
 ```javascript
 async execute(interaction) {
-    const userId = interaction.user.id;           // Discord ID
-    const username = interaction.user.username;   // Username
-    const userTag = interaction.user.tag;         // Username#0000
-    const avatar = interaction.user.avatarURL();  // Avatar image URL
+    const userId = interaction.user.id;           // Discord ID (snowflake, permanent)
+    const username = interaction.user.username;   // Username (can change)
+    const userTag = interaction.user.tag;         // Username#0000 (can change)
+    const avatar = interaction.user.avatarURL();  // Avatar image URL (can change)
     
     console.log(`${userTag} used this command`);
 }
 ```
+
+> **Why Mammon only stores `discord_id`:** The interaction object provides a snapshot of user data (username, avatar, etc.) at the time the command was run, but this data is ephemeral — it's discarded after the handler finishes. The only permanent identifier is the **Discord ID** (snowflake). Mammon stores just the ID in the database and uses the `<@id>` mention syntax to display users, which Discord auto-resolves to their current display name. If you ever need the full user object outside of an interaction, you can call `client.users.fetch(discordId)` to get current username, avatar, etc.
 
 ### Access Server Information
 

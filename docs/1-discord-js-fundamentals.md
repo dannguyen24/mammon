@@ -261,10 +261,36 @@ const username = interaction.options.getString('username');
 const userId = interaction.options.getUser('user');
 
 // Accessing user/guild info
-interaction.user.id       // Discord user ID
+interaction.user.id       // Discord user ID (snowflake)
 interaction.guild.id      // Server ID
+interaction.user.username // Username (e.g., 'dannguyen')
 interaction.user.tag      // Username#0000
-interaction.user.avatar   // Avatar URL
+interaction.user.avatarURL()  // Full avatar image URL
+```
+
+### How Discord.js Manages User Data
+
+When a user runs a slash command, Discord sends an `interaction` object containing a **snapshot** of the user's data at that moment (username, avatar, ID, etc.). This data is **ephemeral** — once `execute()` finishes, the interaction object is garbage collected.
+
+However, user data is never truly "lost." There are two ways to access it later:
+
+1. **Mention syntax** `<@discord_id>` — Discord auto-resolves the user's current display name when this is rendered in messages/embeds. This is the most common approach.
+
+2. **`client.users.fetch(discordId)`** — Fetches the user's current info (username, avatar, etc.) from the Discord API using their snowflake ID.
+
+This is why Mammon's database only stores `discord_id` (the snowflake) and not the username or avatar. Usernames and avatars can change at any time — storing them would lead to stale data. The ID is permanent and can always be used to resolve current info.
+
+```javascript
+// These are equivalent for displaying a user:
+
+// 1. Mention (auto-resolves, works in embeds/messages)
+`<@${user.discord_id}>`  // Renders as @Username in Discord
+
+// 2. Fetch (when you need the actual user object)
+const discordUser = await client.users.fetch(user.discord_id);
+discordUser.username;        // Current username
+discordUser.avatarURL();     // Current avatar URL
+discordUser.displayAvatarURL(); // Avatar with fallback to default
 ```
 
 ---

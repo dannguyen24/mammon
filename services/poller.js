@@ -148,6 +148,7 @@ async function processUserSubmissions(client, user, submissions) {
 
 			const embed = new EmbedBuilder()
 				.setColor(getDifficultyColor(difficulty))
+				.setThumbnail(profile?.avatar || 'https://leetcode.com/static/images/LeetCode_logo.png')
 				.setDescription(
 					`🔥 <@${discord_id}> just crushed${difficultyTag} **[${solve.title}](https://leetcode.com/problems/${solve.titleSlug}/)**!${totalLine}`
 				)

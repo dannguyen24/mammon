@@ -72,13 +72,19 @@ When a new solve is detected, the bot posts an embed like:
 🔥 @User just crushed a Medium problem: Two Sum!
 Total Solved: 142
 
+[User's LeetCode avatar displayed as thumbnail]
+
 Language: javascript
 ```
 
-The embed is color-coded by difficulty:
-- **Easy**: Green (#00B8A3)
-- **Medium**: Yellow (#FFC01E)
-- **Hard**: Red (#FF375F)
+The embed includes:
+- The user's **LeetCode profile avatar** as a thumbnail (falls back to the LeetCode logo if unavailable)
+- **Difficulty color-coding**:
+  - **Easy**: Green (#00B8A3)
+  - **Medium**: Yellow (#FFC01E)
+  - **Hard**: Red (#FF375F)
+
+> **Why the LeetCode avatar instead of the Discord avatar?** The poller runs in the background with no interaction object, so there's no easy access to the user's Discord avatar. Instead, it uses the LeetCode avatar from the `getUserProfile()` API call (which is already being made to update stats). This also visually distinguishes automated announcements from user-initiated commands.
 
 ### Rate Limiting
 

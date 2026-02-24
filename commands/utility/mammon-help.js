@@ -8,45 +8,43 @@ export default {
 	async execute(interaction) {
 		const embed = new EmbedBuilder()
 			.setColor(0xB2C197)
-			.setTitle('Mammon — Command Guide')
-			.setDescription('Your competitive LeetCode tracking companion. Here\'s everything I can do:')
+			.setTitle('Commands List')
 			.addFields(
 				{
-					name: '👤 Account',
+					name: 'Account',
 					value: [
-						'`/link <username>` — Connect your LeetCode profile',
+						'`/link <username>` — Connect your LeetCode profile\n',
 						'`/untrack` — Unlink your account & stop tracking',
-					].join('\n'),
+					].join(' '),
 				},
 				{
-					name: '📈 Stats',
+					name: 'Stats',
 					value: [
-						'`/stats [@user]` — View LeetCode stats (yours or another member)',
+						'`/stats [@user]` — View LeetCode stats (yours or another member)\n',
 						'`/leaderboard` — Server rankings by problems solved',
-					].join('\n'),
+					].join(' '),
 				},
 				{
-					name: '🏘️ Community',
+					name: 'Community',
 					value: [
 						'`/daily` — Today\'s LeetCode Daily Challenge',
-					].join('\n'),
+					].join(' '),
 				},
 				{
-					name: '⚙️ Server Setup',
+					name: 'Server Setup',
 					value: [
 						'`/setchannel` — Set the channel for automated announcements',
-					].join('\n'),
+					].join(' '),
 				},
-				{
-					name: '🤖 Automated Features',
-					value: [
-						'**Victory Announcements** — New solves posted in the log channel',
-						'**Daily Recap (9 AM)** — Yesterday\'s top grinders',
-						'**Streak Alerts (8 PM)** — Nudge for users at risk of losing streaks',
-					].join('\n'),
-				},
+				// {
+				// 	name: 'Automated Features',
+				// 	value: [
+				// 		'**Victory Announcements** — New solves posted in the log channel',
+				// 		'**Daily Recap (9 AM)** — Yesterday\'s top grinders',
+				// 		'**Streak Alerts (8 PM)** — Nudge for users at risk of losing streaks',
+				// 	].join(' '),
+				// },
 			)
-			.setFooter({ text: 'Mammon • /mammon-help' })
 			.setTimestamp();
 
 		await interaction.reply({ embeds: [embed] });

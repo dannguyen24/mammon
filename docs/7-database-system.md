@@ -244,6 +244,8 @@ discordId      | guildId    | username
 123456789      | 987654321  | john_doe
 ```
 
+> **Why only `discord_id`?** The database intentionally stores only the Discord snowflake ID — not the username or avatar. Discord usernames and avatars can change at any time, so storing them would lead to stale data. When displaying a user, the bot uses the `<@discord_id>` mention syntax (which Discord auto-resolves to the current display name) or calls `client.users.fetch(discordId)` to get current info on demand.
+
 ---
 
 ### Example 2: User Views Stats
