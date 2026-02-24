@@ -54,7 +54,7 @@ export default {
 
 			// Build stats embed with color-coded difficulty breakdown
 			const statsEmbed = new EmbedBuilder()
-				.setColor(0xFFA116) // LeetCode orange
+				.setColor(0xB2C197)
 				.setAuthor({
 					name: targetUser.username,
 					iconURL: targetUser.displayAvatarURL(),
@@ -64,27 +64,29 @@ export default {
 				.setThumbnail(profile.avatar || 'https://leetcode.com/static/images/LeetCode_logo.png')
 				.addFields(
 					{
-						name: '📊 Problems Solved',
+						name: '📈 Problem Solved',
 						value: [
 							`**Total:** ${profile.stats.total}`,
-							`🟢 Easy: ${profile.stats.easy}`,
-							`🟡 Medium: ${profile.stats.medium}`,
-							`🔴 Hard: ${profile.stats.hard}`,
+							`⠀`,
+							`🌱 Easy: ${profile.stats.easy}`,
+							`🌲 Medium: ${profile.stats.medium}`,  
+							`⛰️ Hard: ${profile.stats.hard}`,    
+							'  ',
 						].join('\n'),
 						inline: true,
 					},
 					{
-						name: '🏆 Ranking',
+						name: '💎 Global Rank',
 						value: profile.ranking ? `#${profile.ranking.toLocaleString()}` : 'Unranked',
 						inline: true,
 					},
 					{
-						name: '🔥 Streak',
+						name: '❇️ Consistency',
 						value: `${profile.currentStreak} days`,
 						inline: true,
 					},
 				)
-				.setFooter({ text: 'LeetCode Tracker' })
+				.setFooter({ text: 'Mammon' })
 				.setTimestamp();
 
 			await interaction.editReply({ embeds: [statsEmbed] });
