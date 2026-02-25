@@ -13,6 +13,14 @@ A Discord bot that tracks LeetCode progress, celebrates problem-solving wins, an
 
 ---
 
+## Demo
+
+Watch a quick demo of Mammon in action:
+
+[![Mammon Demo](https://img.shields.io/badge/Watch-Demo%20Video-blue?style=for-the-badge)](https://www.loom.com/share/d2d106d7a12546b5b0de9e6c7529d981)
+
+---
+
 ## Quick Start
 # Quick Invite
 
